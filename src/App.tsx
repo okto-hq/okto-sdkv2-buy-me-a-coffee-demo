@@ -7,6 +7,7 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/home";
 import Dashboard from "./pages/dashboard";
 import Profile from "./pages/profile";
+import Footer from "./components/Footer";
 
 function App() {
   const [user, setUser] = useState<any>(() => {
@@ -23,6 +24,7 @@ function App() {
           <Route path="/dashboard" element={<Dashboard user={user} />} />
           <Route path="/profile" element={<Profile user={user} />} />
         </Routes>
+        <Footer />
       </div>
     </Router>
   );
