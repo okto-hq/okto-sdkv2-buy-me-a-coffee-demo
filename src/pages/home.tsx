@@ -4,7 +4,7 @@ import Leaderboard from "../components/Leaderboard";
 
 const Home = ({ user }: { user: any }) => {
   return (
-    <>
+    <div className="h-screen">
       {/* Hero Section */}
       <section className="bg-[#FFFDE5] py-12 px-6 shadow-lg max-full mx-auto text-center">
         <h1 className="text-4xl md:text-5xl font-extrabold text-black mb-4">
@@ -17,7 +17,7 @@ const Home = ({ user }: { user: any }) => {
 
       {/* Leaderboard Section */}
       <Leaderboard user={user} />
-    </>
+    </div>
   );
 };
 
