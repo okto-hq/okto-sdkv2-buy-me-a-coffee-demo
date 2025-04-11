@@ -95,6 +95,7 @@ const Navbar = ({
     setUser(null);
     localStorage.removeItem("bmac_user"); // Clear user info from localStorage
     localStorage.removeItem("googleIdToken"); // Clear Google token from localStorage
+    localStorage.removeItem("userAddress");
   };
 
   return (
