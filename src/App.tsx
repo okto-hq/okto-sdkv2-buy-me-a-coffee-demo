@@ -6,6 +6,7 @@ import "./App.css";
 import Navbar from "./components/Navbar";
 import Home from "./pages/home";
 import Dashboard from "./pages/dashboard";
+import Profile from "./pages/profile";
 
 function App() {
   const [user, setUser] = useState<any>(() => {
@@ -20,6 +21,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home user={user} />} />
           <Route path="/dashboard" element={<Dashboard user={user} />} />
+          <Route path="/profile" element={<Profile user={user} />} />
         </Routes>
       </div>
     </Router>

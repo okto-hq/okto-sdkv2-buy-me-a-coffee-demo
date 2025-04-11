@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 // @ts-ignore
 import { creators as initialCreators, Creator } from "../data/creators";
+import { MoveLeft } from "lucide-react";
 
 const Dashboard = ({ user }: { user: any }) => {
   const [creators, setCreators] = useState(initialCreators);
@@ -11,7 +12,9 @@ const Dashboard = ({ user }: { user: any }) => {
 
   useEffect(() => {
     if (!user) return;
-    const exists = creators.find((creator: Creator) => creator.name === user.name);
+    const exists = creators.find(
+      (creator: Creator) => creator.name === user.name
+    );
     setIsCreator(!!exists);
   }, [user, creators]);
 
@@ -31,6 +34,11 @@ const Dashboard = ({ user }: { user: any }) => {
   if (!user) {
     return (
       <div className="text-center py-12">
+        <a href="/">
+          <div className="flex gap-x-2 my-4">
+            <MoveLeft /> Home
+          </div>
+        </a>
         <h2 className="text-2xl font-bold text-gray-700">
           Please log in to view your dashboard
         </h2>
@@ -41,9 +49,11 @@ const Dashboard = ({ user }: { user: any }) => {
   if (!isCreator) {
     return (
       <section className="max-w-xl mx-auto mt-12 px-4">
-        <p>
-          <a href="/">Home</a>
-        </p>
+        <a href="/">
+          <div className="flex gap-x-2 my-4">
+            <MoveLeft /> Home
+          </div>
+        </a>
         <h2 className="text-2xl font-bold mb-4 text-gray-800">
           Create Your Creator Profile
         </h2>
@@ -82,13 +92,15 @@ const Dashboard = ({ user }: { user: any }) => {
     );
   }
 
-  const currentCreator = creators.find((c:any) => c.name === user.name);
+  const currentCreator = creators.find((c: any) => c.name === user.name);
 
   return (
     <section className="max-w-3xl mx-auto mt-12 px-4">
-      <p>
-        <a href="/">Home</a>
-      </p>
+      <a href="/">
+        <div className="flex gap-x-2 my-4">
+          <MoveLeft /> Home
+        </div>
+      </a>
       <h1 className="text-3xl font-bold text-yellow-900 mb-6">
         Creator Dashboard
       </h1>

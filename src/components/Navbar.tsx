@@ -76,10 +76,19 @@ const Navbar = ({
                     className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
                     onClick={() => {
                       setDropdownOpen(false);
+                      window.location.href = "/profile";
+                    }}
+                  >
+                    My Profile
+                  </button>
+                  <button
+                    className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
+                    onClick={() => {
+                      setDropdownOpen(false);
                       window.location.href = "/dashboard";
                     }}
                   >
-                    Become a Creator
+                    Become Creator
                   </button>
                   <button
                     className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
