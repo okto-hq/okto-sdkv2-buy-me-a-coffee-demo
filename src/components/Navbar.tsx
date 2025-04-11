@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { GoogleLogin, googleLogout } from "@react-oauth/google";
 import { Coffee } from "lucide-react";
 import { useOkto } from "@okto_web3/react-sdk";
+import { jwtDecode } from "jwt-decode";
 
 const Navbar = ({
   user,
@@ -66,8 +67,6 @@ const Navbar = ({
         }
       );
       console.log("Authenticated with Okto:", user);
-      setUser(user);
-      localStorage.setItem("bmac_user", JSON.stringify(user)); // Store user info in localStorage
     } catch (error) {
       console.error("Authentication failed:", error);
       localStorage.removeItem("googleIdToken");
@@ -79,6 +78,10 @@ const Navbar = ({
   // 2. Initiates Okto authentication
   const handleGoogleLogin = async (credentialResponse: any) => {
     const idToken = credentialResponse.credential || "";
+    const decoded: any = jwtDecode(credentialResponse.credential || "");
+    setUser(decoded);
+    localStorage.setItem("bmac_user", JSON.stringify(decoded));
+
     if (idToken) {
       localStorage.setItem("googleIdToken", idToken);
       handleAuthenticate(idToken);
