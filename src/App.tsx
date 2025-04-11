@@ -1,27 +1,28 @@
 /** @format */
 
 import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
-import Leaderboard from "./components/Leaderboard";
 import Navbar from "./components/Navbar";
+import Home from "./pages/home";
+import Dashboard from "./pages/dashboard";
 
 function App() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(() => {
+    const storedUser = localStorage.getItem("bmac_user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+
   return (
-    <div className="font-poppins">
-      <Navbar user={user} setUser={setUser} />
-      {/* Hero Section */}
-      <section className="bg-[#FFFDE5] py-12 px-6 shadow-lg max-full mx-auto text-center">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-black mb-4">
-          Support Your Favorite Creators
-        </h1>
-        <p className="text-xl md:text-2xl text-black">
-          Buy them coffee, and send smiles their way!
-        </p>
-      </section>
-      {/* Leardboard Section */}
-      <Leaderboard user={user} />
-    </div>
+    <Router>
+      <div className="font-poppins">
+        <Navbar user={user} setUser={setUser} />
+        <Routes>
+          <Route path="/" element={<Home user={user} />} />
+          <Route path="/dashboard" element={<Dashboard user={user} />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 

@@ -33,10 +33,6 @@ const Navbar = ({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [dropdownOpen]);
 
-  const handleBecomeCreator = () => {
-    console.log("User wants to become a creator!");
-  };
-
   return (
     <nav className="bg-white p-4">
       <div className="container mx-auto flex justify-between items-center">
@@ -52,6 +48,7 @@ const Navbar = ({
                   credentialResponse.credential || ""
                 );
                 setUser(decoded);
+                localStorage.setItem("bmac_user", JSON.stringify(decoded));
               }}
               onError={() => {
                 console.log("Login Failed");
@@ -77,7 +74,10 @@ const Navbar = ({
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-md z-10">
                   <button
                     className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100"
-                    onClick={handleBecomeCreator}
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      window.location.href = "/dashboard";
+                    }}
                   >
                     Become a Creator
                   </button>
@@ -86,6 +86,7 @@ const Navbar = ({
                     onClick={() => {
                       googleLogout();
                       setUser(null);
+                      localStorage.removeItem("bmac_user"); // <- clear on logout
                       setDropdownOpen(false);
                     }}
                   >
