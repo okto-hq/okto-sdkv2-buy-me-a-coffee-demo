@@ -40,13 +40,14 @@ const initialCreators: Creator[] = [
 const Leaderboard = ({ user }: { user: any }) => {
   const oktoClient = useOkto();
   const address = localStorage.getItem("userAddress");
-
+  // @ts-ignore
   const [creators, setCreators] = useState<Creator[]>(initialCreators);
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   const [amount, setAmount] = useState<number>(1);
   const [jobId, setJobId] = useState<string | null>(null);
   const [orderStatus, setOrderStatus] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  // @ts-ignore
   const [error, setError] = useState<string | null>(null);
   const [modalStage, setModalStage] = useState<
     "initiating" | "status" | "thankyou" | null
