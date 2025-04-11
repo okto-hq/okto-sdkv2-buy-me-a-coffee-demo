@@ -1,9 +1,14 @@
 /** @format */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { Coffee, RefreshCcw } from "lucide-react";
-import { useOkto, tokenTransfer, getOrdersHistory } from "@okto_web3/react-sdk";
+import {
+  useOkto,
+  tokenTransfer,
+  getOrdersHistory,
+  getAccount,
+} from "@okto_web3/react-sdk";
 
 interface Creator {
   id: number;
@@ -39,9 +44,9 @@ const initialCreators: Creator[] = [
 
 const Leaderboard = ({ user }: { user: any }) => {
   const oktoClient = useOkto();
-  const address = localStorage.getItem("userAddress");
   // @ts-ignore
   const [creators, setCreators] = useState<Creator[]>(initialCreators);
+  const [address, setAddress] = useState<any>(null);
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   const [amount, setAmount] = useState<number>(1);
   const [jobId, setJobId] = useState<string | null>(null);
@@ -52,6 +57,28 @@ const Leaderboard = ({ user }: { user: any }) => {
   const [modalStage, setModalStage] = useState<
     "initiating" | "status" | "thankyou" | null
   >(null);
+
+  useEffect(() => {
+    const fetchAccount = async () => {
+      try {
+        const response = await getAccount(oktoClient);
+        // @ts-ignore
+        const baseTestnetData = response.find(
+          (account: any) => account.networkName.toLowerCase() === "base_testnet"
+        );
+        if (baseTestnetData) {
+          setAddress(baseTestnetData.address);
+          console.log(baseTestnetData);
+        } else {
+          console.warn("BASE_TESTNET data not found");
+        }
+      } catch (error) {
+        console.error("Error fetching user account:", error);
+      }
+    };
+
+    fetchAccount();
+  }, [oktoClient]);
 
   const handleTransfer = async () => {
     setModalStage("initiating");

@@ -54,7 +54,6 @@ const Profile = ({ user }: { user: any }) => {
           networkSymbol: baseTestnetData.networkSymbol,
         };
         setBaseNetworkInfo(info);
-        localStorage.setItem("userAddress", baseTestnetData.address);
         console.log("BASE Testnet Info:", info);
       } else {
         console.warn("BASE_TESTNET data not found");
