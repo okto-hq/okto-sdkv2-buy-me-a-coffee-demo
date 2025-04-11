@@ -1,6 +1,5 @@
 /** @format */
 
-import React from "react";
 import Leaderboard from "../components/Leaderboard";
 
 const Home = ({ user }: { user: any }) => {
