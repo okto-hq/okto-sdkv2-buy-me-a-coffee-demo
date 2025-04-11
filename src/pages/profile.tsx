@@ -4,6 +4,7 @@ import { MoveLeft } from "lucide-react";
 import { creators, Creator } from "../data/creators";
 import { useOkto, getAccount, getPortfolio } from "@okto_web3/react-sdk";
 import { useEffect, useState } from "react";
+import Okto from "../assets/okto.svg";
 
 type NetworkInfo = {
   caipId: string;
@@ -141,20 +142,33 @@ const Profile = ({ user }: { user: any }) => {
             🔗 Network Info
           </h4>
           {baseNetworkInfo ? (
-            <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
-              <p>
-                <strong>Network:</strong> {baseNetworkInfo.networkName}
-              </p>
-              <p>
-                <strong>Symbol:</strong> {baseNetworkInfo.networkSymbol}
-              </p>
-              <p>
-                <strong>Address:</strong>{" "}
-                <span className="break-all">{baseNetworkInfo.address}</span>
-              </p>
-              <p>
-                <strong>CAIP ID:</strong> {baseNetworkInfo.caipId}
-              </p>
+            <div className="flex items-center gap-4 p-4 border rounded-2xl shadow-sm bg-gray-50">
+              {/* Okto + Network Badge */}
+              <div className="relative w-16 h-16">
+                <img
+                  src={Okto} // Replace with actual import or path
+                  alt="Okto"
+                  className="w-16 h-16 rounded-full border-2 border-gray-300"
+                />
+                {/* Small circle for network logo */}
+                <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-white bg-white shadow">
+                  <img
+                    src={`https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png`} // Replace with dynamic network icon
+                    alt="Network"
+                    className="w-full h-full rounded-full"
+                  />
+                </div>
+              </div>
+
+              {/* Info */}
+              <div>
+                <p className="text-sm text-gray-600 font-medium">
+                  {baseNetworkInfo?.networkName}
+                </p>
+                <p className="text-sm text-gray-500 break-all">
+                  {baseNetworkInfo?.address}
+                </p>
+              </div>
             </div>
           ) : (
             <p className="text-sm text-gray-500">No network info available.</p>
@@ -164,7 +178,7 @@ const Profile = ({ user }: { user: any }) => {
         {/* Balance Info */}
         <div className="mt-6 border-t pt-4">
           <h4 className="text-lg font-semibold text-gray-800 mb-2">
-            💰 Balance Info
+            💰 Balance Info (Please fund the above wallet)
           </h4>
           {baseBalanceInfo ? (
             <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
