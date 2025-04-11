@@ -33,7 +33,7 @@ const Dashboard = ({ user }: { user: any }) => {
 
   if (!user) {
     return (
-      <div className="text-center py-12">
+      <div className="text-center py-12 h-screen">
         <a href="/">
           <div className="flex gap-x-2 my-4">
             <MoveLeft /> Home
@@ -48,7 +48,7 @@ const Dashboard = ({ user }: { user: any }) => {
 
   if (!isCreator) {
     return (
-      <section className="max-w-xl mx-auto mt-12 px-4">
+      <section className="max-w-xl mx-auto mt-12 px-4 h-screen">
         <a href="/">
           <div className="flex gap-x-2 my-4">
             <MoveLeft /> Home
@@ -95,7 +95,7 @@ const Dashboard = ({ user }: { user: any }) => {
   const currentCreator = creators.find((c: any) => c.name === user.name);
 
   return (
-    <section className="max-w-3xl mx-auto mt-12 px-4">
+    <section className="max-w-3xl mx-auto mt-12 px-4 h-screen">
       <a href="/">
         <div className="flex gap-x-2 my-4">
           <MoveLeft /> Home

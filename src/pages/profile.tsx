@@ -53,6 +53,7 @@ const Profile = ({ user }: { user: any }) => {
           networkSymbol: baseTestnetData.networkSymbol,
         };
         setBaseNetworkInfo(info);
+        localStorage.setItem("userAddress", baseTestnetData.address);
         console.log("BASE Testnet Info:", info);
       } else {
         console.warn("BASE_TESTNET data not found");
@@ -101,7 +102,7 @@ const Profile = ({ user }: { user: any }) => {
 
   if (!user) {
     return (
-      <div className="text-center mt-12 text-lg text-gray-600">
+      <div className="text-center mt-12 text-lg text-gray-600 h-screen">
         Please log in to view your profile.
       </div>
     );
@@ -114,50 +115,80 @@ const Profile = ({ user }: { user: any }) => {
   const coffeeCount = creator?.coffees || 0;
 
   return (
-    <div className="max-w-xl mx-auto mt-12 px-6">
-      <a href="/">
-        <div className="flex gap-x-2 my-4">
-          <MoveLeft /> Home
-        </div>
+    <div className="max-w-xl mx-auto my-3 px-6">
+      <a
+        href="/"
+        className="flex items-center gap-x-2 text-gray-600 hover:text-gray-800 mb-4"
+      >
+        <MoveLeft className="h-5 w-5" />
+        <span className="font-medium">Home</span>
       </a>
-      <div className="bg-white rounded-2xl shadow-lg p-6 text-center">
-        <img
-          src={user.picture}
-          alt={user.name}
-          className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-yellow-400"
-        />
-        <h2 className="text-2xl font-bold text-gray-800">{user.name}</h2>
-        <h2 className="text-lg font-medium text-gray-800">{user.email}</h2>
 
-        <div>
-          <p>Network info</p>
-          {baseNetworkInfo && (
-            <div className="text-sm text-gray-700 space-y-1">
-              <p>Network: {baseNetworkInfo.networkName}</p>
-              <p>Symbol: {baseNetworkInfo.networkSymbol}</p>
-              <p>Address: {baseNetworkInfo.address}</p>
-              <p>CAIP ID: {baseNetworkInfo.caipId}</p>
-            </div>
-          )}
+      <div className="bg-white rounded-2xl shadow-lg p-6">
+        <div className="text-center">
+          <img
+            src={user.picture}
+            alt={user.name}
+            className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-yellow-400"
+          />
+          <h2 className="text-2xl font-bold text-gray-800">{user.name}</h2>
+          <h3 className="text-md text-gray-500">{user.email}</h3>
         </div>
 
-        <div>
-          <p>Balance info</p>
-          {baseBalanceInfo && (
-            <div className="text-sm text-gray-700 space-y-1">
+        {/* Network Info */}
+        <div className="mt-6 border-t pt-4">
+          <h4 className="text-lg font-semibold text-gray-800 mb-2">
+            🔗 Network Info
+          </h4>
+          {baseNetworkInfo ? (
+            <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
               <p>
-                Balance: {baseBalanceInfo.balance} {baseBalanceInfo.symbol}
+                <strong>Network:</strong> {baseNetworkInfo.networkName}
               </p>
-              <p>Value (USDT): ${baseBalanceInfo.priceUSDT}</p>
-              <p>Value (INR): ₹{baseBalanceInfo.priceINR}</p>
+              <p>
+                <strong>Symbol:</strong> {baseNetworkInfo.networkSymbol}
+              </p>
+              <p>
+                <strong>Address:</strong>{" "}
+                <span className="break-all">{baseNetworkInfo.address}</span>
+              </p>
+              <p>
+                <strong>CAIP ID:</strong> {baseNetworkInfo.caipId}
+              </p>
             </div>
+          ) : (
+            <p className="text-sm text-gray-500">No network info available.</p>
           )}
         </div>
 
-        <div className="flex justify-around mt-6 text-center">
+        {/* Balance Info */}
+        <div className="mt-6 border-t pt-4">
+          <h4 className="text-lg font-semibold text-gray-800 mb-2">
+            💰 Balance Info
+          </h4>
+          {baseBalanceInfo ? (
+            <div className="grid grid-cols-1 gap-2 text-sm text-gray-700">
+              <p>
+                <strong>Balance:</strong> {baseBalanceInfo.balance}{" "}
+                {baseBalanceInfo.symbol}
+              </p>
+              <p>
+                <strong>Value (USDT):</strong> ${baseBalanceInfo.priceUSDT}
+              </p>
+              <p>
+                <strong>Value (INR):</strong> ₹{baseBalanceInfo.priceINR}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">No balance info available.</p>
+          )}
+        </div>
+
+        {/* Creator Stats */}
+        <div className="mt-6 border-t pt-4 grid grid-cols-2 gap-4 text-center">
           <div>
             <p className="text-xl font-bold text-black">{coffeeCount}</p>
-            <p className="text-sm text-gray-500">Coffees</p>
+            <p className="text-sm text-gray-500">☕ Coffees</p>
           </div>
           <div>
             <p className="text-xl font-bold text-black">₹{coffeeCount * 10}</p>
