@@ -1,0 +1,13 @@
+@layer utilities {
+  .loader {
+    border-radius: 9999px;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
