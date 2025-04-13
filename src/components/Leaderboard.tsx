@@ -383,12 +383,16 @@ const Leaderboard = ({ user }: { user: any }) => {
                     >
                       Support
                     </button>
+
+                    {/* Show login error only if user is not signed in */}
                     {!user && (
                       <p className="w-full text-center my-1 text-red-700 font-bold">
                         **Please Login**
                       </p>
                     )}
-                    {!hasInsufficientBalance && (
+
+                    {/* Show balance error only if user is signed in and has insufficient balance */}
+                    {user && !hasInsufficientBalance && (
                       <p className="w-full text-center my-1 text-red-700 font-bold">
                         Insufficient balance
                       </p>
