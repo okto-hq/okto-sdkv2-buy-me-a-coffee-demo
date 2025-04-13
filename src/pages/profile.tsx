@@ -5,6 +5,7 @@ import { creators, Creator } from "../data/creators";
 import { useOkto, getAccount, getPortfolio } from "@okto_web3/react-sdk";
 import { useEffect, useState } from "react";
 import Okto from "../assets/okto.svg";
+import Base from "../assets/base.svg";
 
 type NetworkInfo = {
   caipId: string;
@@ -115,7 +116,7 @@ const Profile = ({ user }: { user: any }) => {
   const coffeeCount = creator?.coffees || 0;
 
   return (
-    <div className="max-w-xl mx-auto my-3 px-6">
+    <div className="max-w-xl mx-auto my-3 px-6 h-screen">
       <a
         href="/"
         className="flex items-center gap-x-2 text-gray-600 hover:text-gray-800 mb-4"
@@ -145,15 +146,15 @@ const Profile = ({ user }: { user: any }) => {
               {/* Okto + Network Badge */}
               <div className="relative w-16 h-16">
                 <img
-                  src={Okto} // Replace with actual import or path
+                  src={Okto}
                   alt="Okto"
                   className="w-16 h-16 rounded-full border-2 border-gray-300"
                 />
                 {/* Small circle for network logo */}
-                <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-white bg-white shadow">
+                <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full border-3 border-white bg-white shadow">
                   <img
-                    src={`https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/info/logo.png`} // Replace with dynamic network icon
-                    alt="Network"
+                    src={Base}
+                    alt="Base"
                     className="w-full h-full rounded-full"
                   />
                 </div>
