@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Dialog, DialogPanel } from "@headlessui/react";
-import { Coffee, RefreshCcw, RefreshCwOff } from "lucide-react";
+import { Coffee, RefreshCwOff } from "lucide-react";
 import {
   useOkto,
   tokenTransfer,
@@ -200,7 +200,7 @@ const Leaderboard = ({ user }: { user: any }) => {
           setModalStage(status === "SUCCESSFUL" ? "thankyou" : null);
         }
 
-        if(status === "FAILED") {
+        if (status === "FAILED") {
           clearInterval(intervalId);
           setModalStage("failed");
         }
@@ -348,9 +348,6 @@ const Leaderboard = ({ user }: { user: any }) => {
                     <div className="flex justify-center gap-3 mt-6 w-full my-2">
                       {[1, 5, 10].map((usdAmt) => {
                         const nativeAmt = nativeConversionRates[usdAmt];
-                        const displayAmt =
-                          selectedToken === "native" ? nativeAmt : usdAmt;
-
                         return (
                           <button
                             key={usdAmt}
