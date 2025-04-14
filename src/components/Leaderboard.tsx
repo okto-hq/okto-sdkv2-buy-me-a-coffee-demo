@@ -164,14 +164,29 @@ const Leaderboard = ({ user }: { user: any }) => {
                       disabled={!user}
                       className="w-full border rounded-lg p-2 mb-4 text-center disabled:bg-gray-100 disabled:cursor-not-allowed"
                     />
+                    <div className="flex justify-center gap-3 mt-6 w-full mb-4">
+                      {[1, 5, 10].map((amount) => (
+                        <button
+                          key={amount}
+                          onClick={() => setAmount(amount)}
+                          className="flex-1 bg-yellow-500 text-white font-semibold py-2 rounded-lg hover:bg-yellow-600"
+                        >
+                          ${amount}
+                        </button>
+                      ))}
+                    </div>
                     <button
                       onClick={handleBuyCoffee}
                       disabled={!user || amount <= 0 || isNaN(amount)}
                       className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Support
-                        </button>
-                        {!user && (<p className="w-full text-center my-1 text-red-700">**Please Login**</p>)}
+                    </button>
+                    {!user && (
+                      <p className="w-full text-center my-1 text-red-700">
+                        **Please Login**
+                      </p>
+                    )}
                   </>
                 )}
               </>

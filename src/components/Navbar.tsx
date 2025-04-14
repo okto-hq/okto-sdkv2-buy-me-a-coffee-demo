@@ -33,6 +33,20 @@ const Navbar = ({
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, [dropdownOpen]);
 
+  // Handle User Login
+  const handleGoogleLogin = (credentialResponse: any) => {
+    const decoded: any = jwtDecode(credentialResponse.credential || "");
+    setUser(decoded);
+    localStorage.setItem("bmac_user", JSON.stringify(decoded));
+  };
+
+  // Handle User Logout
+  const handleGoogleLogout = () => {
+    googleLogout();
+    setUser(null);
+    localStorage.removeItem("bmac_user");
+  };
+
   return (
     <nav className="bg-white p-4">
       <div className="container mx-auto flex justify-between items-center">
@@ -43,13 +57,7 @@ const Navbar = ({
         <div>
           {!user ? (
             <GoogleLogin
-              onSuccess={(credentialResponse) => {
-                const decoded: any = jwtDecode(
-                  credentialResponse.credential || ""
-                );
-                setUser(decoded);
-                localStorage.setItem("bmac_user", JSON.stringify(decoded));
-              }}
+              onSuccess={handleGoogleLogin}
               onError={() => {
                 console.log("Login Failed");
               }}
@@ -92,12 +100,7 @@ const Navbar = ({
                   </button>
                   <button
                     className="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-100"
-                    onClick={() => {
-                      googleLogout();
-                      setUser(null);
-                      localStorage.removeItem("bmac_user"); // <- clear on logout
-                      setDropdownOpen(false);
-                    }}
+                    onClick={handleGoogleLogout}
                   >
                     Logout
                   </button>
