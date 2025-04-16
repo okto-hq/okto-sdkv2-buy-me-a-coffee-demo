@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Dialog, DialogPanel } from "@headlessui/react";
-import { Coffee, RefreshCcw } from "lucide-react";
+import { Coffee, RefreshCwOff } from "lucide-react";
 import {
   useOkto,
   tokenTransfer,
   getOrdersHistory,
   getAccount,
+  getPortfolio,
 } from "@okto_web3/react-sdk";
 
 interface Creator {
@@ -15,8 +16,16 @@ interface Creator {
   name: string;
   description: string;
   image: string;
+  address: string;
   coffees: number;
 }
+
+type BalanceInfo = {
+  balance: string;
+  priceUSDT: string;
+  priceINR: string;
+  symbol: string;
+};
 
 const initialCreators: Creator[] = [
   {
@@ -24,6 +33,7 @@ const initialCreators: Creator[] = [
     name: "Alice Johnson",
     description: "Frontend wizard & UI/UX enthusiast",
     image: "https://i.pravatar.cc/150?img=26",
+    address: "0x2C6Ef84acD95dA1407712f9Ae4698973D644408b",
     coffees: 58,
   },
   {
@@ -31,6 +41,7 @@ const initialCreators: Creator[] = [
     name: "Dev Dave",
     description: "Building dev tools and open source libraries",
     image: "https://i.pravatar.cc/150?img=53",
+    address: "0x2C6Ef84acD95dA1407712f9Ae4698973D644408b",
     coffees: 74,
   },
   {
@@ -38,6 +49,7 @@ const initialCreators: Creator[] = [
     name: "Sina Sam",
     description: "Digital illustrator & coffee addict",
     image: "https://i.pravatar.cc/150?img=5",
+    address: "0x967B26C9e77f2F5e0753bcbcb2bB624e5bBFF24C",
     coffees: 91,
   },
 ];
@@ -50,15 +62,28 @@ const Leaderboard = ({ user }: { user: any }) => {
   const [selectedCreator, setSelectedCreator] = useState<Creator | null>(null);
   const [amount, setAmount] = useState<number>(1);
   const [jobId, setJobId] = useState<string | null>(null);
+  // @ts-ignore
   const [orderStatus, setOrderStatus] = useState<string | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedToken, setSelectedToken] = useState<"native" | "usdt">(
+    "native"
+  );
+  const [baseBalanceInfo, setBaseBalanceInfo] = useState<BalanceInfo | null>(
+    null
+  );
+  const nativeConversionRates: Record<number, string> = {
+    1: "0.00050",
+    5: "0.0025",
+    10: "0.0050",
+  };
+
   // @ts-ignore
   const [error, setError] = useState<string | null>(null);
   const [modalStage, setModalStage] = useState<
-    "initiating" | "status" | "thankyou" | null
+    "initiating" | "status" | "failed" | "thankyou" | null
   >(null);
 
   useEffect(() => {
+    if (!oktoClient || !user) return;
     const fetchAccount = async () => {
       try {
         const response = await getAccount(oktoClient);
@@ -80,27 +105,75 @@ const Leaderboard = ({ user }: { user: any }) => {
     fetchAccount();
   }, [oktoClient]);
 
+  useEffect(() => {
+    const fetchBaseBalance = async () => {
+      try {
+        const data = await getPortfolio(oktoClient);
+        console.log("Portfolio data: ", data);
+
+        const baseGroup = data.groupTokens.find(
+          (group: any) => group.networkName?.toLowerCase() === "base_testnet"
+        );
+
+        if (!baseGroup) {
+          console.warn("BASE_TESTNET token group not found");
+          setBaseBalanceInfo(null);
+          return;
+        }
+
+        const selectedSymbol =
+          selectedToken === "native" ? "WETH" : selectedToken.toUpperCase();
+
+        // Look inside group.tokens array for the desired token
+        const tokenInfo = baseGroup.tokens.find(
+          (token: any) => token.symbol === selectedSymbol
+        );
+
+        if (tokenInfo) {
+          setBaseBalanceInfo({
+            balance: tokenInfo.balance,
+            priceUSDT: tokenInfo.holdingsPriceUsdt,
+            priceINR: tokenInfo.holdingsPriceInr,
+            symbol: tokenInfo.symbol,
+          });
+        } else {
+          console.warn(`${selectedSymbol} token not found in BASE_TESTNET`);
+          setBaseBalanceInfo(null);
+        }
+      } catch (error) {
+        console.error("Error fetching base balance:", error);
+      }
+    };
+
+    fetchBaseBalance();
+  }, [oktoClient, selectedToken]);
   const handleTransfer = async () => {
     setModalStage("initiating");
     setError(null);
     setOrderStatus(null);
     setJobId(null);
 
-    await new Promise((res) => setTimeout(res, 2000));
+    await new Promise((res) => setTimeout(res, 2000)); // simulate delay
 
+    const tokenAddres =
+      selectedToken === "native"
+        ? ""
+        : "0x323e78f944a9a1fcf3a10efcc5319dbb0bb6e673";
     try {
       const decimalAmount = BigInt(Math.floor(Number(amount) * 1e18));
       const transferParams = {
         amount: decimalAmount,
-        recipient:
-          "0x2C6Ef84acD95dA1407712f9Ae4698973D644408b" as `0x${string}`,
-        token: "" as `0x${string}`,
+        recipient: selectedCreator?.address as `0x${string}`,
+        token: tokenAddres as `0x${string}`,
         caip2Id: "eip155:84532",
       };
 
       const newJobId = await tokenTransfer(oktoClient, transferParams);
       setJobId(newJobId);
       setModalStage("status");
+
+      // start polling
+      pollOrderStatus(newJobId);
     } catch (err) {
       console.error("Transfer error:", err);
       setError("Transfer failed.");
@@ -108,30 +181,43 @@ const Leaderboard = ({ user }: { user: any }) => {
     }
   };
 
-  const refreshOrderStatus = async () => {
-    if (!jobId) return;
+  const pollOrderStatus = (jobId: string) => {
+    const intervalId = setInterval(async () => {
+      try {
+        const orders = await getOrdersHistory(oktoClient, {
+          intentId: jobId,
+          intentType: "TOKEN_TRANSFER",
+        });
 
-    setIsRefreshing(true);
-    try {
-      const orders = await getOrdersHistory(oktoClient, {
-        intentId: jobId,
-        intentType: "TOKEN_TRANSFER",
-      });
+        const order = orders?.[0];
+        const status = order?.status || "UNKNOWN";
+        console.log("Polled status:", status);
 
-      const order = orders?.[0];
-      const status = order?.status || "UNKNOWN";
-      setOrderStatus(status);
+        setOrderStatus(status);
 
-      if (status === "SUCCESSFUL") {
-        setModalStage("thankyou");
+        if (status === "SUCCESSFUL") {
+          clearInterval(intervalId);
+          setModalStage(status === "SUCCESSFUL" ? "thankyou" : null);
+        }
+
+        if (status === "FAILED") {
+          clearInterval(intervalId);
+          setModalStage("failed");
+        }
+      } catch (err) {
+        console.error("Polling error:", err);
+        clearInterval(intervalId);
+        setError("Failed to fetch status.");
+        setModalStage(null);
       }
-    } catch (err) {
-      console.error("Error fetching status:", err);
-      setError("Failed to fetch status.");
-    } finally {
-      setIsRefreshing(false);
-    }
+    }, 4000); // poll every 4 seconds
   };
+
+  const hasInsufficientBalance = Boolean(
+    baseBalanceInfo &&
+      baseBalanceInfo.balance &&
+      amount > parseFloat(baseBalanceInfo.balance) / 1e18
+  );
 
   return (
     <section className="max-w-5xl mx-auto mt-12 px-4">
@@ -161,6 +247,9 @@ const Leaderboard = ({ user }: { user: any }) => {
                   {creator.name}
                 </h3>
                 <p className="text-sm text-gray-500">{creator.description}</p>
+                <p className="text-sm text-gray-500">
+                  Address: {creator.address}
+                </p>
               </div>
               <div className="flex text-center gap-x-2 items-center">
                 <p className="text-md font-bold text-black">
@@ -196,6 +285,9 @@ const Leaderboard = ({ user }: { user: any }) => {
                     <p className="text-sm text-gray-500">
                       {selectedCreator.description}
                     </p>
+                    <p className="text-sm text-gray-500">
+                      {selectedCreator.address.slice(0, 8)}...
+                    </p>
                   </div>
                 </div>
 
@@ -205,7 +297,38 @@ const Leaderboard = ({ user }: { user: any }) => {
                       ☕ 1 coffee will be added.
                     </p>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Amount (18 Decimals. You can enter 1.5, 2.3, etc.)
+                      Available Tokens
+                    </label>
+                    <div className="flex gap-x-5 mb-4">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="token"
+                          value="native"
+                          checked={selectedToken === "native"}
+                          onChange={() => setSelectedToken("native")}
+                          className="form-radio text-indigo-600"
+                        />
+                        <span className="text-md font-medium text-gray-700">
+                          Native
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="token"
+                          value="usdt"
+                          checked={selectedToken === "usdt"}
+                          onChange={() => setSelectedToken("usdt")}
+                          className="form-radio text-indigo-600"
+                        />
+                        <span className="text-md font-medium text-gray-700">
+                          USDT
+                        </span>
+                      </label>
+                    </div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Amount (18 Decimals)
                     </label>
                     <input
                       type="number"
@@ -215,16 +338,63 @@ const Leaderboard = ({ user }: { user: any }) => {
                       disabled={!user}
                       className="w-full border rounded-lg p-2 mb-4 text-center disabled:bg-gray-100 disabled:cursor-not-allowed"
                     />
+                    {baseBalanceInfo && (
+                      <p className="text-xs text-gray-600 mb-2">
+                        Available:{" "}
+                        {parseFloat(baseBalanceInfo.balance).toFixed(6)}{" "}
+                        {baseBalanceInfo.symbol}
+                      </p>
+                    )}
+                    <div className="flex justify-center gap-3 mt-6 w-full my-2">
+                      {[1, 5, 10].map((usdAmt) => {
+                        const nativeAmt = nativeConversionRates[usdAmt];
+                        return (
+                          <button
+                            key={usdAmt}
+                            onClick={() => {
+                              const finalAmount =
+                                selectedToken === "native"
+                                  ? parseFloat(nativeAmt)
+                                  : usdAmt;
+                              setAmount(finalAmount);
+                            }}
+                            className="flex-1 text-white font-semibold py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 transition"
+                          >
+                            ${usdAmt}
+                            {selectedToken === "native" && (
+                              <span className="block text-xs font-light">
+                                (~{nativeAmt} ETH)
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+
                     <button
                       onClick={handleTransfer}
-                      disabled={!user || amount <= 0 || isNaN(amount)}
+                      disabled={
+                        !user ||
+                        amount < 0 ||
+                        isNaN(amount) ||
+                        !hasInsufficientBalance
+                      }
                       className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Support
                     </button>
+
+                    {/* Show login error only if user is not signed in */}
                     {!user && (
-                      <p className="w-full text-center my-1 text-red-700">
+                      <p className="w-full text-center my-1 text-red-700 font-bold">
                         **Please Login**
+                      </p>
+                    )}
+
+                    {/* Show balance error only if user is signed in and has insufficient balance */}
+                    {user && !hasInsufficientBalance && (
+                      <p className="w-full text-center my-1 text-red-700 font-bold">
+                        Insufficient balance
                       </p>
                     )}
                   </>
@@ -241,39 +411,37 @@ const Leaderboard = ({ user }: { user: any }) => {
 
                 {modalStage === "status" && jobId && (
                   <>
-                    <p className="text-sm text-black mb-4  font-semibold font-poppins">
-                      <span>
-                        Your transaction is being processed. Please Refresh the
-                        token until you see the status is successful.
-                      </span>
-                      <pre className="break-all bg-gray-200 my-2 py-2 px-1 text-indigo-400">
-                        {jobId}
-                      </pre>
-                    </p>
+                    <div className="text-center py-6">
+                      <div className="loader mb-3 mx-auto border-4 border-yellow-400 border-t-transparent rounded-full w-8 h-8 animate-spin" />
+                      <p className="text-yellow-700 font-medium">
+                        Initiating transaction… Hang tight, this might some
+                        time.
+                      </p>
+                      <p className="font-medium text-left mt-4">
+                        Transaction Id (Job Id):
+                        <pre className="w-full bg-gray-100 text-indigo-700 px-2 py-1 rounded-md">
+                          {jobId}
+                        </pre>
+                      </p>
+                    </div>
+                  </>
+                )}
 
-                    <p className="text-sm text-gray-700 mb-2 font-poppins">
-                      Status:{" "}
-                      <span
-                        className={`font-bold ${
-                          orderStatus === "SUCCESSFUL"
-                            ? "text-green-600"
-                            : orderStatus === "FAILED"
-                            ? "text-red-600"
-                            : "text-yellow-600"
-                        }`}
-                      >
-                        {orderStatus || "Not checked yet"}
-                      </span>
-                    </p>
-
-                    <button
-                      onClick={refreshOrderStatus}
-                      disabled={isRefreshing}
-                      className="w-full flex items-center justify-center gap-2 mb-2 py-2 text-white font-semibold rounded bg-yellow-500 hover:bg-yellow-600"
-                    >
-                      <RefreshCcw className="w-5 h-5 " />
-                      {isRefreshing ? "Refreshing..." : "Refresh Status"}
-                    </button>
+                {modalStage === "failed" && jobId && (
+                  <>
+                    <div className="text-center py-6">
+                      <RefreshCwOff className="w-10 h-10 text-red-700 mb-3 mx-auto" />
+                      <p className="text-red-700 font-medium">
+                        We are sorry, but the transaction failed. <br /> You can
+                        contact the support team for more information.
+                      </p>
+                      <p className="font-medium text-left mt-4">
+                        Transaction Id (Job Id):
+                        <pre className="w-full bg-gray-100 text-indigo-700 px-2 py-1 rounded-md">
+                          {jobId}
+                        </pre>
+                      </p>
+                    </div>
                   </>
                 )}
 
